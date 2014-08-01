@@ -24,8 +24,7 @@ after_failure:
   - python other/slack/slack_notifier.py --project $PROJECT --org $SLACK_ORG --token $SLACK_TOKEN
 after_success:
   - python other/slack/slack_notifier.py --project $PROJECT --org $SLACK_ORG --token $SLACK_TOKEN -s
-  - ssh-add -L
-  - bundle exec cap ec2 deploy:migrations
+  - echo "$SSH_AUTH_SOCK"
 notifications:
   email:
     on_success: change
