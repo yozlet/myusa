@@ -1,10 +1,9 @@
 default_run_options[:pty] = true
 ssh_options[:forward_agent] = true
 ssh_options[:auth_methods] = ['publickey']
-ssh_options[:keys] = [ENV['AWS_KEY_PAIR_PATH']]
 
 set :rails_env, :staging
-set :ip, ENV['MYUSA_STAGING']
+set :ip, ENV['MYUSA_STAGING'] || 'staging.myusa.gsa.io'
 set :port, 22
 set :deployer, 'ubuntu'
 set :user, 'ubuntu'

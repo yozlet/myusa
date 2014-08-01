@@ -24,9 +24,11 @@ after_failure:
   - python other/slack/slack_notifier.py --project $PROJECT --org $SLACK_ORG --token $SLACK_TOKEN
 after_success:
   - python other/slack/slack_notifier.py --project $PROJECT --org $SLACK_ORG --token $SLACK_TOKEN -s
+  - bundle exec cap ec2 deploy:migrations
 notifications:
   email:
     on_success: change
     on_failure: always
     recipients:
       - jeremy.grahame@gsa.gov
+      - christopher.papazian@gsa.gov
