@@ -173,6 +173,18 @@ describe 'OauthApps' do
         user.reload
         expect(user.oauth2_authorization_for(app1.oauth2_client)).to be_nil
         expect(page.current_url.split('?').first).to eq redirect_uri
+        uri = URI.parse(current_url)
+        params = CGI.parse(uri.query)
+        code = (params['code'] || []).first
+        uri.path.should eq '/'
+        page_driver = Capybara.current_session.driver
+        page_driver.submit :post, '/oauth/authorize',
+                           grant_type: 'authorization_code',
+                           code: code,
+                           client_id: app1_client_id,
+                           client_secret: app1.oauth2_client.client_secret,
+                           redirect_uri: redirect_uri
+        page_driver.status_code.should eq 400
       end
 
       it 'does not display authorization screen after authorizing' do
