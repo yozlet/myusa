@@ -165,7 +165,7 @@ describe 'OauthApps' do
         expect(page.current_url.split('?').first).to eq redirect_uri
       end
 
-      it 'does not add an authorization when user clicks cancel' do
+      it 'returns an access denied message when user clicks cancel' do
         auth_for_user scope: 'profile notifications'
         user.reload
         expect(user.oauth2_authorization_for(app1.oauth2_client)).to be_nil
@@ -173,6 +173,12 @@ describe 'OauthApps' do
         user.reload
         expect(user.oauth2_authorization_for(app1.oauth2_client)).to be_nil
         expect(page.current_url.split('?').first).to eq redirect_uri
+        uri = URI.parse(page.current_url)
+        params = CGI.parse(uri.query)
+        error = (params['error'] || []).first
+        error_description = (params['error_description'] || []).first
+        expect(error).to eq 'access_denied'
+        expect(error_description).to eq 'The user denied you access'
       end
 
       it 'does not display authorization screen after authorizing' do
