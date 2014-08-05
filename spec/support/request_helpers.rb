@@ -1,4 +1,5 @@
 require 'spec_helper'
+include Warden::Test::Helpers
 
 def create_confirmed_user_with_profile(args={})
   profile = {
@@ -12,4 +13,8 @@ def create_confirmed_user_with_profile(args={})
     user.email = profile.delete(:email)
     user.profile = user.build_profile(profile)
   end
+end
+
+def login(user)
+  login_as user, scope: :user
 end

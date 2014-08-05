@@ -71,6 +71,7 @@ RSpec.configure do |config|
 
   config.after(:each) do
     DatabaseCleaner.clean
+    Warden.test_reset!
   end
 
   # config.before(:each) { GC.disable }
