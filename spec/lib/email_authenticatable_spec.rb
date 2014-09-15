@@ -33,7 +33,6 @@ describe Devise::Strategies::EmailAuthenticatable do
   describe '#authenticate!' do
     let(:email) { 'test@example.com' }
     let(:session) { Hash.new }
-    let(:params) { { email: email, token: 'foobar' } }
 
     before :each do
       @user = User.create(email: email)
@@ -41,42 +40,59 @@ describe Devise::Strategies::EmailAuthenticatable do
       @raw = @token.raw
 
       allow(subject).to receive(:session).and_return(session)
+
+      subject.authenticate!
     end
 
-    context 'invalid email and token combination' do
-      it 'does not set the userr' do
-        subject.authenticate!
+    shared_context 'bad token' do
+      it 'does not set the user' do
         expect(subject.user).to be_nil
       end
 
       it 'fails' do
-        subject.authenticate!
         expect(subject.result).to eq(:failure)
       end
 
       it 'sets messgae' do
-        subject.authenticate!
         expect(subject.message).to eq(:invalid_token)
       end
+    end
+
+    shared_context 'good token' do
+
+      it 'sets the user' do
+        expect(subject.user).to be
+      end
+
+      it 'halts warden' do
+        expect(subject).to be_halted
+      end
+
+      it 'invalidates the token' do
+        expect(AuthenticationToken.authenticate(@user, @raw)).to be_nil
+      end
+    end
+
+    context 'with nonsense string for token' do
+      let(:params) { { email: email, token: 'foobar' } }
+      include_examples 'bad token'
+    end
+
+    context 'with another user''s token' do
+      let(:params) do
+        user2 = User.create(email: 'otherguy@gsa.gov')
+        token2 = AuthenticationToken.generate(user_id: user2.id, return_to: '/foobar')
+
+        { email: email, token: token2.raw }
+      end
+
+      include_examples 'bad token'
     end
 
     context 'valid email and token combination' do
       let(:params) { { email: email, token: @raw } }
 
-      it 'sets the user' do
-        subject.authenticate!
-        expect(subject.user).to be
-      end
-
-      it 'halts warden' do
-        subject.authenticate!
-        expect(subject).to be_halted
-      end
-
-      it 'invalidates the token' do
-        subject.authenticate!
-        expect(AuthenticationToken.find_by_user_id(@user.id)).to_not be_valid
-      end
+      include_examples 'good token'
     end
   end
 end

@@ -3,8 +3,10 @@ class OAuth2::AuthorizationPage < SitePrism::Page
   set_url '/oauth/authorize'
   set_url_matcher /\/oauth\/authorize/
 
-  element :scopes, '.scope-list'
+  element :scope_list, '.scope-list'
+  elements :scopes, '.scope-list label'
 
+  element :profile_email_checkbox, "input[value='profile.email']"
   element :profile_email, "input#profile_email"
   element :profile_last_name, "input#profile_last_name"
   element :profile_phone_number, "input#profile_phone_number"

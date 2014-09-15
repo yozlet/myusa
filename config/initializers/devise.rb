@@ -1,3 +1,5 @@
+require 'failure_app'
+
 # Use this hook to configure devise mailer, warden hooks and so forth.
 # Many of these configuration options can be set straight in your model.
 Devise.setup do |config|
@@ -5,12 +7,6 @@ Devise.setup do |config|
   # random tokens. Changing this key will render invalid all existing
   # confirmation, reset password and unlock tokens in the database.
   config.secret_key = Rails.application.secrets.devise_secret_key
-
-  # ==> Mailer Configuration
-  # Configure the e-mail address which will be shown in Devise::Mailer,
-  # note that it will be overwritten if you use your own mailer class
-  # with default "from" parameter.
-  config.mailer_sender = 'myusa-mailtest@gsa.io' #TODO: find a better email address to send from
 
   # Configure the class responsible to send e-mails.
   config.mailer = 'DeviseMailer'
@@ -236,6 +232,7 @@ Devise.setup do |config|
   # change the failure app, you can configure them inside the config.warden block.
   #
   config.warden do |manager|
+    manager.failure_app = FailureApp
     manager.default_strategies(scope: :user).unshift :email_authenticatable
   end
 

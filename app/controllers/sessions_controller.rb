@@ -1,26 +1,50 @@
 class SessionsController < Devise::SessionsController
   include Devise::Controllers::Rememberable
 
+  before_filter :set_logout_user, only: [:destroy]
+
+  layout "login", only: [:new]
   before_action :authenticate_user_from_token!, only: [:new]
 
   def create
-    user = User.find_by_email(params[:user][:email]) ||
-           User.create!(email: params[:user][:email])
+    @email = params[:user][:email]
+    user = User.find_by_email(@email) ||
+           User.create!(email: @email)
 
-    user.set_authentication_token(
+    @token = user.set_authentication_token(
       return_to: stored_location_for(:user),
       remember_me: (params[:user][:remember_me] == '1')
     )
+  end
 
-    # TODO: template with instructions for completing token authentication.
-    render text: "CYM, #{user.email}"
+  def show
+    old_token = AuthenticationToken.find(params[:token_id])
+    user = old_token.user
+
+    @token = user.set_authentication_token(
+      return_to: old_token.return_to,
+      remember_me: old_token.remember_me
+    )
+
+    flash.now[:notice] = I18n.t(:resent_token)
+    render :create
+  rescue ActiveRecord::RecordNotFound => e
+    redirect_to new_user_session_url, notice: I18n.t(:no_user_token)
   end
 
   private
+
+  def create_authentication_token(user)
+    user.set_authentication_token
+  end
 
   def authenticate_user_from_token!
     if warden.authenticate(:email_authenticatable)
       redirect_to after_sign_in_path_for(current_user)
     end
+  end
+
+  def set_logout_user
+    @logged_out_user = current_user
   end
 end

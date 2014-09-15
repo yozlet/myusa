@@ -1,20 +1,9 @@
 module OauthHelper
-  def scope_check_box_tag(scope)
-    check_box_tag('scope[]', scope, true,
+  def scope_check_box_tag(scope, selected=true)
+    check_box_tag('scope[]', scope, selected,
       id: ('scope_' + scope.gsub(/\./, '_')),
       multiple: true
     )
-  end
-
-  def profile_text_field(scope, options={})
-    field = Profile.attribute_from_scope(scope)
-    value = current_user.profile.send(field)
-    if value.present?
-      return current_user.profile.send(field)
-    else
-      options.merge!(placeholder: t("scopes.#{scope}.placeholder"), disabled: value.present?)
-      text_field_tag "profile[#{field}]", current_user.profile.send(field), options
-    end
   end
 
   def oauth_deny_link(pre_auth, text, options={})
@@ -38,5 +27,13 @@ module OauthHelper
       response_type: pre_auth.response_type,
       scope: pre_auth.scope
     )
+  end
+
+  def app_status(app)
+    if app.public
+      return t('app_status.public')
+    end
+
+    app.requested_public_at.nil? ? t('app_status.private') : t('app_status.pending')
   end
 end

@@ -7,14 +7,13 @@ require 'capistrano-unicorn'
 
 set :application, 'myusa'
 set :user, 'myusa'
-set :deployer, 'myusa'
 set :web_user, "nobody"
 set :web_group, "web"
 
 set :default_stage, 'vagrant'
 set :stages, %w(vagrant development staging ec2 production)
 
-set :repository, "https://github.com/18F/myusa.git"
+set :repository, 'https://github.com/18F/myusa.git'
 set :branch, ENV['BRANCH'] || 'devel'
 set :deploy_to, "/var/www/#{application}"
 set :deploy_via, :remote_cache
@@ -24,6 +23,7 @@ set :default_shell, '/bin/bash -l'
 set :use_sudo, false
 set :keep_releases, 6
 set :scm, :git
+set :port, 22
 
 set :bundle_without, [ :development, :test, :deploy ]
 

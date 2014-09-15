@@ -5,7 +5,7 @@ $(document).ready(function () {
    * Authorization page
    */
   $(".scope-list li").each(function(){
-    if($(this).children().find('input[type=text]').length < 1){
+    if($(this).children().find('input[type=text],select.form-control').length < 1){
       $(this).children().eq(1).hide();
       $(this).children().eq(0).toggleClass("open");
     }
@@ -25,6 +25,11 @@ $(document).ready(function () {
           $("#scopes-alert-none").addClass('hidden');
         }});
       }
+      if ($("#scopes-alert-none2").is(":visible")) {
+        $("#scopes-alert-none2").slideToggle({ complete: function() {
+          $("#scopes-alert-none2").addClass('hidden');
+        }});
+      }
       return;
     }
     var checkboxes = $(".scope-list input[type='checkbox']");
@@ -39,20 +44,36 @@ $(document).ready(function () {
     // if none are checked, show the alert message
     if (checked === false) {
       $("#scopes-alert-none").slideToggle().removeClass('hidden');
+      $("#scopes-alert-none2").slideToggle().removeClass('hidden');
     }
   });
 
-  $(".more-options").show();
-  // hide or show the sign in buttons
+  /**
+   * Show either the OAuth or Email login page
+   */
+  var showOption = function (opt) {
+    if (opt == '#email') {
+      $(".hidden-buttons").show();
+      $(".more-options").hide();
+      $(".less-options").show();
+      $(".omniauth-buttons").hide();
+      $("#inputEmail").focus();
+    } else {
+      $(".hidden-buttons").hide();
+      $(".less-options").hide();
+      $(".more-options").show();
+      $(".omniauth-buttons").show();
+    }
+  };
+
+  // initially use the location hash to show the page
+  showOption(window.location.hash);
+  // hide or show based on which button is clicked
   $(".more-options").click(function (e) {
-    $(".hidden-buttons").show(400);
-    $(".more-options").hide();
-    $(".less-options").show();
+    showOption('#email');
   });
   $(".less-options").click(function (e) {
-    $(".hidden-buttons").hide(400);
-    $(".less-options").hide();
-    $(".more-options").show();
+    showOption('#oauth');
   });
 
   // toggle sign in and sign up forms
@@ -82,7 +103,7 @@ $(document).ready(function () {
       for (var i = 0; i < buttons.length; i++) {
         var b = $($("." + buttons[i])[0]);
         b.removeClass(buttons[i]);
-        b.addClass(buttons[i]+"-white");        
+        b.addClass(buttons[i]+"-white");
       }
     }
     // white buttons showing
@@ -91,8 +112,20 @@ $(document).ready(function () {
       for (var i = 0; i < buttons.length; i++) {
         var b = $($("." + buttons[i] + "-white")[0]);
         b.removeClass(buttons[i] + "-white");
-        b.addClass(buttons[i]);        
+        b.addClass(buttons[i]);
       }
     }
   });
+/**
+ * Marketing page
+ */
+ $("#contact-form").submit(function(e){
+  e.preventDefault();
+  var formData = $(this).serialize();
+  $.post('contact_us', formData, function(response){
+    $(".contact-flash").text(response.message).removeClass('hidden');
+  });
+  $(this)[0].reset();
+ });
+
 });

@@ -1,19 +1,15 @@
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 ENV['RAILS_ENV'] ||= 'test'
 
-require 'simplecov'
-if ENV['COVERAGE_REPORTS']
-  require 'simplecov-csv'
-  SimpleCov.coverage_dir ENV['COVERAGE_REPORTS']
-  SimpleCov.formatter = SimpleCov::Formatter::CSVFormatter
-end
-SimpleCov.start 'rails' # has to start before application is loaded
+require "codeclimate-test-reporter"
+CodeClimate::TestReporter.start
 
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
 require 'rspec/its'
 require 'capybara/rspec'
 
+SmsSpec.driver = :"twilio-ruby"
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
@@ -22,6 +18,20 @@ Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 # Checks for pending migrations before tests are run.
 # If you are not using ActiveRecord, you can remove this line.
 ActiveRecord::Migration.maintain_test_schema!
+
+# Forces all threads to share the same connection. This works on
+# Capybara because it starts the web server in a thread.
+class ActiveRecord::Base
+  mattr_accessor :shared_connection
+  @@shared_connection = nil
+
+  def self.connection
+    @@shared_connection || retrieve_connection
+  end
+end
+
+ActiveRecord::Base.shared_connection = ActiveRecord::Base.connection
+
 
 RSpec.configure do |config|
   config.include FactoryGirl::Syntax::Methods
@@ -63,15 +73,8 @@ RSpec.configure do |config|
   config.order = "random"
 
   config.before(:suite) do
-    DatabaseCleaner.clean_with(:truncation)
-  end
-
-  config.before(:each) do
     DatabaseCleaner.strategy = :transaction
-  end
-
-  config.before(:each, js: true) do
-    DatabaseCleaner.strategy = :truncation
+    DatabaseCleaner.clean_with(:truncation)
   end
 
   config.before(:each) do
@@ -80,6 +83,10 @@ RSpec.configure do |config|
 
   config.after(:each) do
     DatabaseCleaner.clean
+  end
+
+  config.before(:each, sms: true) do
+    SmsSpec::Data.clear_messages
   end
 
   # config.before(:each) { GC.disable }
@@ -93,6 +100,7 @@ RSpec.configure do |config|
   #   DeferredGarbageCollection.reconsider
   # end
 
-    config.include Devise::TestHelpers, type: :controller
+  config.include Devise::TestHelpers, type: :controller
   config.include Rack::Test::Methods, type: :request
+  config.include SmsSpec::Helpers, sms: true
 end

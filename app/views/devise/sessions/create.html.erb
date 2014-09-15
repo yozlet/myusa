@@ -1,0 +1,27 @@
+<div class="row">
+  <div class="col-md-10 col-md-offset-1">
+    <div class="login">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <h1>Next Step</h1>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <h2>Your MyUSA access link has been sent to  <%= @email %>.</h2>
+          <p>Click on that link, or copy and paste it into this browser to complete your login.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <p>If you do not receive an email from us within the next 5 minutes,
+            you may want to check your spam folder. If you still do not see an
+            email from us, you may <%= link_to 'request another link', user_session_token_path(token_id: @token.id) %>.
+          </p>
+          <%= link_to "Go Back", root_path, class: "btn btn-link" %>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -11,17 +11,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140821154328) do
+ActiveRecord::Schema.define(version: 20140909015306) do
 
-  create_table "app_oauth_scopes", force: true do |t|
-    t.integer  "app_id"
-    t.integer  "oauth_scope_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+  create_table "authentication_tokens", force: true do |t|
+    t.integer  "user_id"
+    t.string   "token"
+    t.datetime "sent_at"
+    t.boolean  "remember_me"
+    t.string   "return_to",   limit: 2000
   end
 
-  add_index "app_oauth_scopes", ["app_id"], name: "index_app_oauth_scopes_on_app_id", using: :btree
-  add_index "app_oauth_scopes", ["oauth_scope_id"], name: "index_app_oauth_scopes_on_oauth_scope_id", using: :btree
+  add_index "authentication_tokens", ["token"], name: "index_authentication_tokens_on_token", unique: true, using: :btree
+  add_index "authentication_tokens", ["user_id"], name: "index_authentication_tokens_on_user_id", using: :btree
 
   create_table "authentications", force: true do |t|
     t.string   "provider"
@@ -34,6 +35,18 @@ ActiveRecord::Schema.define(version: 20140821154328) do
 
   add_index "authentications", ["uid", "provider"], name: "index_authentications_on_uid_and_provider", using: :btree
   add_index "authentications", ["user_id"], name: "index_authentications_on_user_id", using: :btree
+
+  create_table "mobile_confirmations", force: true do |t|
+    t.integer  "profile_id"
+    t.string   "token"
+    t.datetime "confirmation_sent_at"
+    t.datetime "confirmed_at"
+    t.datetime "invalidated_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "mobile_confirmations", ["profile_id"], name: "index_mobile_confirmations_on_profile_id", using: :btree
 
   create_table "notifications", force: true do |t|
     t.string   "subject"
@@ -81,19 +94,25 @@ ActiveRecord::Schema.define(version: 20140821154328) do
   add_index "oauth_access_tokens", ["token"], name: "index_oauth_access_tokens_on_token", unique: true, using: :btree
 
   create_table "oauth_applications", force: true do |t|
-    t.string   "name",                                      null: false
-    t.string   "uid",                                       null: false
-    t.string   "secret",                                    null: false
-    t.text     "redirect_uri",                              null: false
+    t.string   "name",                                             null: false
+    t.string   "uid",                                              null: false
+    t.string   "secret",                                           null: false
+    t.text     "redirect_uri",                                     null: false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "owner_id"
     t.string   "owner_type"
     t.string   "url"
-    t.string   "scopes",       limit: 2000
-    t.boolean  "public",                    default: false
+    t.string   "scopes",              limit: 2000
+    t.boolean  "public",                           default: false
     t.string   "description"
-    t.string   "image"
+    t.string   "short_description"
+    t.string   "custom_text"
+    t.string   "image_file_name"
+    t.string   "image_content_type"
+    t.integer  "image_file_size"
+    t.datetime "image_updated_at"
+    t.datetime "requested_public_at"
   end
 
   add_index "oauth_applications", ["owner_id", "owner_type"], name: "index_oauth_applications_on_owner_id_and_owner_type", using: :btree
@@ -159,34 +178,35 @@ ActiveRecord::Schema.define(version: 20140821154328) do
   add_index "tasks", ["app_id"], name: "index_tasks_on_app_id", using: :btree
   add_index "tasks", ["user_id"], name: "index_tasks_on_user_id", using: :btree
 
+  create_table "user_actions", force: true do |t|
+    t.integer  "user_id"
+    t.integer  "record_id"
+    t.string   "record_type"
+    t.string   "action"
+    t.string   "remote_ip"
+    t.datetime "created_at"
+  end
+
+  add_index "user_actions", ["record_id", "record_type"], name: "index_user_actions_on_record_id_and_record_type", using: :btree
+  add_index "user_actions", ["user_id"], name: "index_user_actions_on_user_id", using: :btree
+
   create_table "users", force: true do |t|
-    t.string   "email",                  default: "", null: false
+    t.string   "email",               default: "", null: false
     t.datetime "remember_created_at"
-    t.integer  "sign_in_count",          default: 0
+    t.integer  "sign_in_count",       default: 0
     t.datetime "current_sign_in_at"
     t.datetime "last_sign_in_at"
     t.string   "current_sign_in_ip"
     t.string   "last_sign_in_ip"
     t.string   "uid"
-    t.string   "reset_password_token"
-    t.datetime "reset_password_sent_at"
-    t.string   "confirmation_token"
-    t.datetime "confirmed_at"
-    t.datetime "confirmation_sent_at"
     t.string   "unconfirmed_email"
-    t.integer  "failed_attempts",        default: 0
-    t.string   "unlock_token"
-    t.datetime "locked_at"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "remember_token"
   end
 
-  add_index "users", ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true, using: :btree
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
   add_index "users", ["remember_token"], name: "index_users_on_remember_token", using: :btree
-  add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
   add_index "users", ["uid"], name: "index_users_on_uid_and_provider", unique: true, using: :btree
-  add_index "users", ["unlock_token"], name: "index_users_on_unlock_token", unique: true, using: :btree
 
 end
