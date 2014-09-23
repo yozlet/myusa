@@ -18,14 +18,14 @@ module OAuth2
     element :request_public, 'input[type="submit"][value="Request Public Access"]'
 
     def status
-      app_properties[3].text
+      app_properties[1].text
     end
   end
 
   # OAuth2::AuthorizationsPage
   class AuthorizationsPage < SitePrism::Page
-    set_url '/applications'
-    set_url_matcher(/\/applications/)
+    set_url '/authorizations'
+    set_url_matcher(/\/authorizations/)
 
     element :secret_key,      '#secret-key'
     element :new_api_key,     'input[type="submit"][value="New API Key"]'
